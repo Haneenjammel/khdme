@@ -1,0 +1,34 @@
+import React from 'react';
+import { Phone, MessageCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+export default function ContactButtons({ phone, whatsapp }) {
+  const handleCall = () => {
+    window.open(`tel:${phone}`, '_self');
+  };
+
+  const handleWhatsApp = () => {
+    const number = (whatsapp || phone).replace(/[^0-9]/g, '');
+    window.open(`https://wa.me/${number}`, '_blank');
+  };
+
+  return (
+    <div className="flex gap-3">
+      <Button
+        onClick={handleCall}
+        className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-12 font-heading font-semibold"
+      >
+        <Phone className="w-4 h-4 mr-2" />
+        Call Now
+      </Button>
+      <Button
+        onClick={handleWhatsApp}
+        variant="outline"
+        className="flex-1 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground rounded-xl h-12 font-heading font-semibold"
+      >
+        <MessageCircle className="w-4 h-4 mr-2" />
+        WhatsApp
+      </Button>
+    </div>
+  );
+}
