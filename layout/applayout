@@ -1,0 +1,52 @@
+import React from 'react';
+import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Home, Search, PlusCircle, User, Briefcase } from 'lucide-react';
+import { useLang } from '@/lib/LanguageContext';
+
+export default function AppLayout() {
+  const location = useLocation();
+  const { t } = useLang();
+
+  const navItems = [
+    { path: '/', icon: Home, label: t.home },
+    { path: '/browse', icon: Search, label: t.browse },
+    { path: '/post', icon: PlusCircle, label: t.post },
+    { path: '/my-services', icon: Briefcase, label: t.myServices },
+    { path: '/profile', icon: User, label: t.profile },
+  ];
+
+  return (
+    <div className="min-h-screen bg-background font-body">
+      <main className="pb-24">
+        <Outlet />
+      </main>
+
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
+        <div className="max-w-lg mx-auto flex items-center justify-around py-2 px-2">
+          {navItems.map(({ path, icon: Icon, label }) => {
+            const isActive = location.pathname === path;
+            return (
+              <Link
+                key={path}
+                to={path}
+                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-200 ${
+                  isActive
+                    ? 'text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <div className={`p-1.5 rounded-xl transition-all duration-200 ${
+                  isActive ? 'bg-primary/10' : ''
+                }`}>
+                  <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
+                </div>
+                <span className="text-[10px] font-medium">{label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
+  );
+}
