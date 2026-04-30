@@ -1,0 +1,24 @@
+import React from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MapPin } from 'lucide-react';
+import { CITIES } from '@/lib/lebanon-data';
+
+export default function CityFilter({ selected, onSelect }) {
+  return (
+    <Select value={selected} onValueChange={onSelect}>
+      <SelectTrigger className="w-full rounded-xl bg-card border-border h-10">
+        <div className="flex items-center gap-2">
+          <MapPin className="w-4 h-4 text-muted-foreground" />
+          <SelectValue placeholder="Filter by city" />
+        </div>
+      </SelectTrigger>
+      <SelectContent className="max-h-72">
+        {CITIES.map((city) => (
+          <SelectItem key={city.key} value={city.key}>
+            {city.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
