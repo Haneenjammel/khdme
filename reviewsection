@@ -1,0 +1,121 @@
+import React, { useState } from 'react';
+import { Star } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { base44 } from '@/api/base44Client';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { format } from 'date-fns';
+
+function StarRating({ rating, onRate, interactive = false, size = 'w-4 h-4' }) {
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          onClick={() => interactive && onRate(star)}
+          disabled={!interactive}
+          className={interactive ? 'cursor-pointer' : 'cursor-default'}
+        >
+          <Star
+            className={`${size} ${
+              star <= rating
+                ? 'fill-chart-4 text-chart-4'
+                : 'text-border'
+            }`}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export default function ReviewSection({ serviceId, reviews, currentUser }) {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const queryClient = useQueryClient();
+
+  const createReview = useMutation({
+    mutationFn: (data) => base44.entities.Review.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reviews', serviceId] });
+      setRating(0);
+      setComment('');
+    },
+  });
+
+  const handleSubmit = () => {
+    if (rating === 0) return;
+    createReview.mutate({
+      service_id: serviceId,
+      rating,
+      comment,
+      reviewer_name: currentUser?.full_name || 'Anonymous',
+      reviewer_email: currentUser?.email || '',
+    });
+  };
+
+  const avgRating = reviews.length > 0
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    : 0;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-heading font-bold text-lg">Reviews</h3>
+        <div className="flex items-center gap-2">
+          <StarRating rating={Math.round(avgRating)} />
+          <span className="text-sm text-muted-foreground">
+            ({reviews.length})
+          </span>
+        </div>
+      </div>
+
+      {/* Add Review */}
+      <div className="bg-muted/50 rounded-2xl p-4 space-y-3">
+        <p className="text-sm font-medium">Leave a review</p>
+        <StarRating rating={rating} onRate={setRating} interactive size="w-6 h-6" />
+        <Textarea
+          placeholder="Share your experience..."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          className="bg-card rounded-xl border-border text-sm"
+          rows={2}
+        />
+        <Button
+          onClick={handleSubmit}
+          disabled={rating === 0 || createReview.isPending}
+          className="bg-primary text-primary-foreground rounded-xl font-heading font-semibold text-sm"
+          size="sm"
+        >
+          {createReview.isPending ? 'Posting...' : 'Post Review'}
+        </Button>
+      </div>
+
+      {/* Reviews List */}
+      <div className="space-y-3">
+        {reviews.map((review) => (
+          <div key={review.id} className="bg-card rounded-xl border border-border p-3 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-accent/30 flex items-center justify-center text-xs font-bold text-accent-foreground">
+                  {(review.reviewer_name || 'A')[0].toUpperCase()}
+                </div>
+                <span className="text-sm font-medium">{review.reviewer_name || 'Anonymous'}</span>
+              </div>
+              <StarRating rating={review.rating} />
+            </div>
+            {review.comment && (
+              <p className="text-sm text-muted-foreground">{review.comment}</p>
+            )}
+            <p className="text-[10px] text-muted-foreground">
+              {format(new Date(review.created_date), 'MMM d, yyyy')}
+            </p>
+          </div>
+        ))}
+        {reviews.length === 0 && (
+          <p className="text-sm text-muted-foreground text-center py-4">No reviews yet. Be the first!</p>
+        )}
+      </div>
+    </div>
+  );
+}
