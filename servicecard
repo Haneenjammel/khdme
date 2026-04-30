@@ -1,0 +1,74 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { MapPin, Star, DollarSign } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
+import { CATEGORY_ICONS, CATEGORY_LABELS, CITY_LABELS } from '@/lib/lebanon-data';
+
+export { CATEGORY_ICONS as categoryIcons, CATEGORY_LABELS as categoryLabels, CITY_LABELS as cityLabels };
+
+export default function ServiceCard({ service, avgRating, index = 0 }) {
+  const priceText = service.price_max && service.price_max !== service.price_min
+    ? `$${service.price_min} – $${service.price_max}`
+    : `$${service.price_min}`;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05, duration: 0.3 }}
+    >
+      <Link to={`/service/${service.id}`} className="block">
+        <div className="bg-card rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+          {/* Image */}
+          <div className="relative h-36 bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20">
+            {service.image_url ? (
+              <img src={service.image_url} alt={service.title} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-5xl">
+                {CATEGORY_ICONS[service.category] || '⭐'}
+              </div>
+            )}
+            {service.featured && (
+              <Badge className="absolute top-2 left-2 bg-chart-4 text-foreground border-0 font-semibold text-[10px]">
+                ⚡ Featured
+              </Badge>
+            )}
+            <Badge className="absolute top-2 right-2 bg-card/90 text-foreground border-0 font-semibold text-xs backdrop-blur-sm">
+              {CATEGORY_LABELS[service.category]}
+            </Badge>
+          </div>
+
+          {/* Content */}
+          <div className="p-3.5">
+            <h3 className="font-heading font-semibold text-sm text-foreground line-clamp-1">
+              {service.title}
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+              {service.description}
+            </p>
+
+            <div className="flex items-center justify-between mt-3">
+              <div className="flex items-center gap-1 text-primary font-heading font-bold text-sm">
+                <DollarSign className="w-3.5 h-3.5" />
+                {priceText}
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                {avgRating > 0 && (
+                  <span className="flex items-center gap-0.5">
+                    <Star className="w-3 h-3 fill-chart-4 text-chart-4" />
+                    {avgRating.toFixed(1)}
+                  </span>
+                )}
+                <span className="flex items-center gap-0.5">
+                  <MapPin className="w-3 h-3" />
+                  {CITY_LABELS[service.city] || service.city}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
